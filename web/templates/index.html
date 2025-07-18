@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Voice Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-robot"></i> Voice Assistant</h1>
+            <div class="status-indicator">
+                <span id="status-text">Connecting...</span>
+                <div class="status-dot" id="status-dot"></div>
+            </div>
+        </header>
+
+        <main>
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message assistant-message">
+                        <div class="message-content">
+                            <i class="fas fa-robot"></i>
+                            <span>Hello! I'm your voice assistant. You can either speak to me or type your message.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="voice-controls">
+                    <button id="record-btn" class="btn btn-primary btn-large">
+                        <i class="fas fa-microphone"></i>
+                        <span>Hold to Talk</span>
+                    </button>
+                    <div class="recording-indicator" id="recording-indicator">
+                        <div class="pulse"></div>
+                        <span>Recording...</span>
+                    </div>
+                </div>
+
+                <div class="text-controls">
+                    <div class="input-group">
+                        <input type="text" id="text-input" placeholder="Type your message here..." />
+                        <button id="send-btn" class="btn btn-secondary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="reset-btn" class="btn btn-outline">
+                        <i class="fas fa-refresh"></i>
+                        Reset Chat
+                    </button>
+                    <button id="toggle-mode" class="btn btn-outline">
+                        <i class="fas fa-keyboard"></i>
+                        Text Mode
+                    </button>
+                    <button id="settings-btn" class="btn btn-outline">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </button>
+                    <button id="tts-mode-btn" class="btn btn-outline">
+                        <i class="fas fa-volume-up"></i>
+                        TTS Mode
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Voice Assistant powered by Ollama, Whisper, and Bark</p>
+        </footer>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text">Processing...</p>
+    </div>
+
+    <!-- Audio element for playback -->
+    <audio id="audio-player" controls style="display: none;"></audio>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <button class="close-btn" id="close-settings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="model-select">Language Model:</label>
+                    <select id="model-select" class="form-select">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="voice-select">Voice:</label>
+                    <select id="voice-select" class="form-select">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="speed-slider">Speech Speed:</label>
+                    <div class="slider-container">
+                        <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.2" class="slider">
+                        <span id="speed-value">1.2x</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <button id="test-voice" class="btn btn-secondary">
+                        <i class="fas fa-volume-up"></i>
+                        Test Voice
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings" class="btn btn-primary">Save Settings</button>
+                <button id="cancel-settings" class="btn btn-outline">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TTS Mode Modal -->
+    <div id="tts-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-volume-up"></i> Text-to-Speech Mode</h2>
+                <button class="close-btn" id="close-tts">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="tts-text">Text to Read:</label>
+                    <textarea id="tts-text" class="tts-textarea" placeholder="Enter your text here (e.g., voicemail greeting, announcement, script)..." rows="8"></textarea>
+                </div>
+                
+                <div class="tts-controls">
+                    <div class="setting-group">
+                        <label for="tts-voice-select">Voice:</label>
+                        <select id="tts-voice-select" class="form-select">
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="tts-speed-slider">Speed:</label>
+                        <div class="slider-container">
+                            <input type="range" id="tts-speed-slider" min="0.5" max="2.0" step="0.1" value="1.0" class="slider">
+                            <span id="tts-speed-value">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tts-action-buttons">
+                    <button id="play-tts" class="btn btn-primary">
+                        <i class="fas fa-play"></i>
+                        Play
+                    </button>
+                    <button id="stop-tts" class="btn btn-secondary" disabled>
+                        <i class="fas fa-stop"></i>
+                        Stop
+                    </button>
+                    <button id="download-tts" class="btn btn-outline">
+                        <i class="fas fa-download"></i>
+                        Download Audio
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="close-tts-footer" class="btn btn-outline">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
