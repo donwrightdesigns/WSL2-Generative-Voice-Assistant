@@ -5,7 +5,7 @@
 ### Local Development
 `ash
 # Clone and setup
-git clone https://github.com/YOUR-USERNAME/voice-assistant.git
+git clone https://github.com/donwrightdesigns/voice-assistant.git
 cd voice-assistant
 python -m venv venv
 source venv/bin/activate
